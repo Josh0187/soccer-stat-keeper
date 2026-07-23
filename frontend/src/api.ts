@@ -16,6 +16,9 @@ export const playerAPI = {
     const response = await API.post<Player>('/players', playerData);
     return response.data;
   },
+  delete: async (playerId: number): Promise<void> => {
+    await API.delete(`/players/${playerId}`);
+  },
   getLeaderboard: async (): Promise<LeaderboardRow[]> => {
     const response = await API.get<LeaderboardRow[]>('/leaderboard');
     return response.data;

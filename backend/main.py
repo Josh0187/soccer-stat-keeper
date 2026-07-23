@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Response, status
 from sqlalchemy.orm import Session
-from typing import List
 import os
 
 # load env vars
@@ -38,7 +38,7 @@ def read_root():
 
 
 # add a new player to the team
-@app.post("/api/players", status_code=201)
+@app.post("/api/players", status_code=status.HTTP_201_CREATED)
 def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
     db_player = models.Player(
         name=player.name, 
@@ -50,6 +50,18 @@ def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
     db.refresh(db_player)
     return db_player
 
+# delete a player from the team
+@app.delete("/api/players/{player_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_player(player_id: int, db: Session = Depends(get_db)):
+    # check if player exists
+    player = db.query(models.Player).filter(models.Player.id == player_id).first()
+    if not player:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Player not found")
+    
+    db.delete(player)
+    db.commit()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 # get all players on the team
 @app.get("/api/players")
@@ -58,7 +70,7 @@ def get_players(db: Session = Depends(get_db)):
 
 
 # log a new game and match score
-@app.post("/api/games", status_code=201)
+@app.post("/api/games", status_code=status.HTTP_201_CREATED)
 def create_game(game: schemas.GameCreate, db: Session = Depends(get_db)):
     db_game = models.Game(
         date=game.date,
@@ -74,12 +86,12 @@ def create_game(game: schemas.GameCreate, db: Session = Depends(get_db)):
 
 
 # log stats for a player
-@app.post("/api/stats", status_code=201)
+@app.post("/api/stats", status_code=status.HTTP_201_CREATED)
 def log_match_stats(stat: schemas.MatchStatCreate, db: Session = Depends(get_db)):
     # check that player exists first
     player_exists = db.query(models.Player).filter(models.Player.id == stat.player_id).first()
     if not player_exists:
-        raise HTTPException(status_code=404, detail="Player not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Player not found")
         
     db_stat = models.MatchStat(
         game_id=stat.game_id,

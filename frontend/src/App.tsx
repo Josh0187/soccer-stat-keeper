@@ -3,6 +3,7 @@ import type { Player, Game, LeaderboardRow } from './types';
 import { playerAPI, gameAPI } from './api';
 import PlayerForm from './components/PlayerForm';
 import MatchLogger from './components/MatchLogger';
+import { FaTrash } from 'react-icons/fa';
 
 export default function App() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -32,6 +33,17 @@ export default function App() {
     loadDashboardData();
   }, []);
 
+  const handleDeletePlayer = async (id: number) => {
+    try {
+      await playerAPI.delete(id);
+      // update local state first
+      setLeaderboard(prev => prev.filter(player => player.id !== id));
+      // some message
+    } catch (err) {
+      console.error('Error deleting player:', err);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 antialiased text-slate-900">
       <header className="bg-slate-900 text-white shadow-md">
@@ -57,7 +69,7 @@ export default function App() {
             {/* top panel - leaderboard */}
             <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
               <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <span>🏆</span> Top Performers Leaderboard
+                <span>🏆</span> Player Leaderboard
               </h3>
               {loading ? (
                 <p className="text-sm text-slate-500 animate-pulse">Syncing statistics...</p>
@@ -72,6 +84,7 @@ export default function App() {
                         <th className="py-2 px-4 text-center">Goals</th>
                         <th className="py-2 px-4 text-center">Assists</th>
                         <th className="py-2 px-4 text-center font-bold text-slate-700">Total Points</th>
+                        <th></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -83,6 +96,11 @@ export default function App() {
                           <td className="py-3 px-4 text-center font-semibold text-orange-600">{row.goals}</td>
                           <td className="py-3 px-4 text-center font-semibold text-blue-600">{row.assists}</td>
                           <td className="py-3 px-4 text-center font-black text-emerald-600 bg-emerald-50/30 font-mono">{row.points}</td>
+                          <td>
+                            <button className="text-center text-red-600 hover:text-red-800" onClick={() => handleDeletePlayer(row.id)} title="Delete Player">
+                              <FaTrash />
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -113,8 +131,8 @@ export default function App() {
                           {match.goals_for} - {match.goals_against}
                         </span>
                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${match.outcome === 'Win' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
-                            match.outcome === 'Loss' ? 'bg-red-100 text-red-800 border-red-200' :
-                              'bg-slate-200 text-slate-800 border-slate-300'
+                          match.outcome === 'Loss' ? 'bg-red-100 text-red-800 border-red-200' :
+                            'bg-slate-200 text-slate-800 border-slate-300'
                           }`}>
                           {match.outcome}
                         </span>
