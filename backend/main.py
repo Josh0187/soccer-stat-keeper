@@ -2,6 +2,12 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
+import os
+
+# load env vars
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # custon database util
 import models
@@ -14,9 +20,10 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Soccer StatKeeper API")
 
 # configure CORS
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # replace with prod fe url
+    allow_origins=[FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
