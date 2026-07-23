@@ -81,6 +81,7 @@ export default function App() {
                     <thead>
                       <tr className="border-b-2 border-slate-100 text-slate-500 font-semibold">
                         <th className="py-2 px-4">Player</th>
+                        <th className="py-2 px-4 text-center">Position</th>
                         <th className="py-2 px-4 text-center">Goals</th>
                         <th className="py-2 px-4 text-center">Assists</th>
                         <th className="py-2 px-4 text-center font-bold text-slate-700">Total Points</th>
@@ -93,6 +94,7 @@ export default function App() {
                           <td className="py-3 px-4 font-bold text-slate-800">
                             {row.name} <span className="text-xs font-normal text-slate-400 font-mono">#{row.jersey_number ?? 'N/A'}</span>
                           </td>
+                          <td className="py-3 px-4 text-center">{row.position}</td>
                           <td className="py-3 px-4 text-center font-semibold text-orange-600">{row.goals}</td>
                           <td className="py-3 px-4 text-center font-semibold text-blue-600">{row.assists}</td>
                           <td className="py-3 px-4 text-center font-black text-emerald-600 bg-emerald-50/30 font-mono">{row.points}</td>
