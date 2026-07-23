@@ -1,0 +1,123 @@
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from typing import List
+
+# custon database util
+import models
+import schemas
+from database import engine, get_db
+
+# auto-create tables (from models.py) in the database if they dont already exist
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="Soccer StatKeeper API")
+
+# configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # replace with prod fe url
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# API ENDPOINTS
+
+# health check route
+@app.get("/")
+def read_root():
+    return {"status": "Soccer API is running smoothly"}
+
+
+# add a new player to the team
+@app.post("/api/players", status_code=201)
+def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
+    db_player = models.Player(
+        name=player.name, 
+        jersey_number=player.jersey_number, 
+        position=player.position
+    )
+    db.add(db_player)
+    db.commit()
+    db.refresh(db_player)
+    return db_player
+
+
+# get all players on the team
+@app.get("/api/players")
+def get_players(db: Session = Depends(get_db)):
+    return db.query(models.Player).all()
+
+
+# log a new game and match score
+@app.post("/api/games", status_code=201)
+def create_game(game: schemas.GameCreate, db: Session = Depends(get_db)):
+    db_game = models.Game(
+        date=game.date,
+        opponent=game.opponent,
+        goals_for=game.goals_for,
+        goals_against=game.goals_against,
+        outcome=game.outcome
+    )
+    db.add(db_game)
+    db.commit()
+    db.refresh(db_game)
+    return db_game
+
+
+# log stats for a player
+@app.post("/api/stats", status_code=201)
+def log_match_stats(stat: schemas.MatchStatCreate, db: Session = Depends(get_db)):
+    # check that player exists first
+    player_exists = db.query(models.Player).filter(models.Player.id == stat.player_id).first()
+    if not player_exists:
+        raise HTTPException(status_code=404, detail="Player not found")
+        
+    db_stat = models.MatchStat(
+        game_id=stat.game_id,
+        player_id=stat.player_id,
+        goals=stat.goals,
+        assists=stat.assists,
+        yellow_cards=stat.yellow_cards,
+        minutes_played=stat.minutes_played
+    )
+    db.add(db_stat)
+    db.commit()
+    db.refresh(db_stat)
+    return db_stat
+
+# get leaderboard data
+@app.get("/api/leaderboard")
+def get_leaderboard(db: Session = Depends(get_db)):
+    players = db.query(models.Player).all()
+    leaderboard = []
+
+    for player in players:
+        total_goals = 0
+        total_assists = 0
+        
+        # get total goals and assists
+        for stat in player.stats:
+            total_goals += stat.goals
+            total_assists += stat.assists
+            
+        leaderboard.append({
+            "id": player.id,
+            "name": player.name,
+            "jersey_number": player.jersey_number,
+            "position": player.position,
+            "goals": total_goals,
+            "assists": total_assists,
+            "points": total_goals + total_assists
+        })
+        
+    # sort by goals
+    leaderboard.sort(key=lambda x: x["goals"], reverse=True)
+    return leaderboard
+
+# get recent match history
+@app.get("/api/games")
+def get_recent_games(db: Session = Depends(get_db)):
+    return db.query(models.Game).order_by(models.Game.date.desc()).all()
+

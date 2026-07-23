@@ -1,0 +1,100 @@
+import React, { useState } from 'react';
+import type { Player } from '../types';
+import { playerAPI } from '../api';
+
+interface PlayerFormProps {
+  onPlayerAdded: () => void;
+}
+
+export default function PlayerForm({ onPlayerAdded }: PlayerFormProps) {
+  const [name, setName] = useState('');
+  const [jerseyNumber, setJerseyNumber] = useState<string>('');
+  const [position, setPosition] = useState('Forward');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.SubmitEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+
+    setLoading(true);
+    setError('');
+
+    const newPlayer: Player = {
+      name: name.trim(),
+      jersey_number: jerseyNumber ? parseInt(jerseyNumber, 10) : null,
+      position: position
+    };
+
+    try {
+      await playerAPI.create(newPlayer);
+      setName('');
+      setJerseyNumber('');
+      onPlayerAdded();
+    } catch (err) {
+      console.error(err);
+      setError('Failed to save player to database.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+      <h3 className="text-xl font-bold text-slate-800 mb-4">Add New Player</h3>
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm mb-4">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
+          <input 
+            type="text" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            placeholder="e.g., Lionel Messi"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+            required 
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Jersey Number</label>
+          <input 
+            type="number" 
+            value={jerseyNumber} 
+            onChange={(e) => setJerseyNumber(e.target.value)} 
+            placeholder="e.g., 10"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Position</label>
+          <select 
+            value={position} 
+            onChange={(e) => setPosition(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+          >
+            <option value="Goalkeeper">Goalkeeper</option>
+            <option value="Defender">Defender</option>
+            <option value="Midfielder">Midfielder</option>
+            <option value="Forward">Forward</option>
+          </select>
+        </div>
+
+        <button 
+          type="submit" 
+          disabled={loading} 
+          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition disabled:bg-emerald-400 cursor-pointer shadow-sm"
+        >
+          {loading ? 'Saving...' : 'Add to Roster'}
+        </button>
+      </form>
+    </div>
+  );
+}
