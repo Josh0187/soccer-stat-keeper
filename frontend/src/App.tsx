@@ -39,8 +39,10 @@ export default function App() {
       // update local state first
       setLeaderboard(prev => prev.filter(player => player.id !== id));
       // some message
+      alert("Successful delete");
     } catch (err) {
       console.error('Error deleting player:', err);
+      alert("Error deleting player: " + err);
     }
   }
 

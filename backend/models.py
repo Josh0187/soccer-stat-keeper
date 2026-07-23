@@ -12,7 +12,7 @@ class Player(Base):
     position = Column(String, nullable=True)
     
     # Player -> Match Stat
-    stats = relationship("MatchStat", back_populates="player")
+    stats = relationship("MatchStat", back_populates="player", cascade="all, delete", passive_deletes=True)
 
 class Game(Base):
     __tablename__ = "games"
@@ -32,7 +32,7 @@ class MatchStat(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     game_id = Column(Integer, ForeignKey("games.id"), nullable=False)
-    player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
+    player_id = Column(Integer, ForeignKey("players.id", ondelete="CASCADE"), nullable=False)
     
     # soccer specific stats
     goals = Column(Integer, default=0)
