@@ -1,5 +1,6 @@
 # ⚽ Soccer Stat Keeper
 
+![CI](https://github.com/Josh0187/soccer-stat-keeper/actions/workflows/ci.yml/badge.svg)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
@@ -159,6 +160,29 @@ Start Vite dev server:
 npm run dev
 ```
 *Frontend runs at `http://localhost:5173`*
+
+### 4. Running Backend Tests
+
+From the repository root, activate the backend virtual environment and run:
+```bash
+source .venv/bin/activate
+pytest backend/tests -q
+```
+
+### 5. Running Frontend Tests
+
+From the frontend directory, run:
+```bash
+cd frontend
+npm run test
+```
+
+To generate a coverage report:
+```bash
+cd frontend
+npm run test:coverage
+```
+The report is written to `frontend/coverage/`.
 
 ---
 
