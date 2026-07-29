@@ -50,6 +50,24 @@ def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
     db.refresh(db_player)
     return db_player
 
+# update a player on the team
+@app.patch("/api/players/{player_id}", status_code=status.HTTP_200_OK)
+def update_player(player_id: int, player_data: schemas.PlayerUpdate, db: Session = Depends(get_db)):
+    # check if player exists
+    player = db.query(models.Player).filter(models.Player.id == player_id).first()
+    if not player:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Player not found")
+
+    # update player attributes
+    update_data = player_data.model_dump(exclude_unset=True)
+
+    for key, val in update_data.items():
+        setattr(player, key, val)
+
+    db.commit()
+    db.refresh(player)
+    return player
+
 # delete a player from the team
 @app.delete("/api/players/{player_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_player(player_id: int, db: Session = Depends(get_db)):
@@ -68,6 +86,19 @@ def delete_player(player_id: int, db: Session = Depends(get_db)):
 def get_players(db: Session = Depends(get_db)):
     return db.query(models.Player).all()
 
+# get single player on team
+@app.get("/api/players/{player_id}")
+def get_player(player_id: int, db: Session = Depends(get_db)):
+    # player should exist
+    player = db.query(models.Player).filter(models.Player.id == player_id).first()
+    
+    if not player:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail=f"Player with ID {player_id} not found"
+        )
+        
+    return player
 
 # log a new game and match score
 @app.post("/api/games", status_code=status.HTTP_201_CREATED)

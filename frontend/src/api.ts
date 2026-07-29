@@ -12,8 +12,16 @@ export const playerAPI = {
     const response = await API.get<Player[]>('/players');
     return response.data;
   },
+  get: async (playerId: number): Promise<Player> => {
+    const response = await API.get<Player>(`/players/${playerId}`);
+    return response.data;
+  },
   create: async (playerData: Player): Promise<Player> => {
     const response = await API.post<Player>('/players', playerData);
+    return response.data;
+  },
+  update: async (playerId: number, playerData: Partial<Player>): Promise<Player> => {
+    const response = await API.patch<Player>(`/players/${playerId}`, playerData);
     return response.data;
   },
   delete: async (playerId: number): Promise<void> => {

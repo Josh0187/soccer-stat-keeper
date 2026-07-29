@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { Player, Game, MatchStat } from '../types';
 import { gameAPI } from '../api';
 
@@ -22,6 +22,16 @@ export default function MatchLogger({ players, onMatchLogged }: MatchLoggerProps
   const [statRows, setStatRows] = useState<TempStatRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', isError: false });
+
+  // auto remove success/error message after 3s
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage({ text: '', isError: false });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   const addStatRow = () => {
     setStatRows([...statRows, { player_id: '', goals: 0, assists: 0 }]);
@@ -54,11 +64,11 @@ export default function MatchLogger({ players, onMatchLogged }: MatchLoggerProps
 
     try {
       const savedGame = await gameAPI.create(matchData);
-      
+
       if (savedGame.id) {
         for (const row of statRows) {
           if (!row.player_id) continue;
-          
+
           const performancePayload: MatchStat = {
             game_id: savedGame.id,
             player_id: parseInt(row.player_id, 10),
@@ -67,7 +77,7 @@ export default function MatchLogger({ players, onMatchLogged }: MatchLoggerProps
             yellow_cards: 0,
             minutes_played: 90
           };
-          
+
           await gameAPI.logStat(performancePayload);
         }
       }
@@ -90,11 +100,10 @@ export default function MatchLogger({ players, onMatchLogged }: MatchLoggerProps
   return (
     <div className="w-full bg-white border border-slate-200 rounded-xl shadow-sm p-6 mt-6">
       <h3 className="text-xl font-bold text-slate-800 mb-4">Log Match & Player Stats</h3>
-      
+
       {message.text && (
-        <div className={`px-4 py-2 rounded-lg text-sm mb-4 border ${
-          message.isError ? 'bg-red-50 border-red-200 text-red-600' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-        }`}>
+        <div className={`px-4 py-2 rounded-lg text-sm mb-4 border ${message.isError ? 'bg-red-50 border-red-200 text-red-600' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+          }`}>
           {message.text}
         </div>
       )}
@@ -103,23 +112,23 @@ export default function MatchLogger({ players, onMatchLogged }: MatchLoggerProps
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Opponent</label>
-            <input 
-              type="text" 
-              value={opponent} 
-              onChange={(e) => setOpponent(e.target.value)} 
+            <input
+              type="text"
+              value={opponent}
+              onChange={(e) => setOpponent(e.target.value)}
               placeholder="e.g. FC Barcelona"
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-              required 
+              required
             />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Match Date</label>
-            <input 
-              type="date" 
-              value={date} 
-              onChange={(e) => setDate(e.target.value)} 
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-              required 
+              required
             />
           </div>
         </div>
@@ -127,28 +136,28 @@ export default function MatchLogger({ players, onMatchLogged }: MatchLoggerProps
         <div className="grid grid-cols-3 gap-2">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Goals For</label>
-            <input 
-              type="number" 
+            <input
+              type="number"
               min="0"
-              value={goalsFor} 
+              value={goalsFor}
               onChange={(e) => setGoalsFor(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
             />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Goals Against</label>
-            <input 
-              type="number" 
+            <input
+              type="number"
               min="0"
-              value={goalsAgainst} 
+              value={goalsAgainst}
               onChange={(e) => setGoalsAgainst(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
             />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Outcome</label>
-            <select 
-              value={outcome} 
+            <select
+              value={outcome}
               onChange={(e) => setOutcome(e.target.value as 'Win' | 'Loss' | 'Draw')}
               className="w-full px-3 py-2 border border-slate-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
             >
@@ -162,7 +171,7 @@ export default function MatchLogger({ players, onMatchLogged }: MatchLoggerProps
         <div className="border-t border-slate-100 pt-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-sm font-bold text-slate-700">Individual Contributions</h4>
-            <button 
+            <button
               type="button"
               onClick={addStatRow}
               className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-1 px-3 rounded-lg border border-slate-200 transition cursor-pointer"
@@ -191,8 +200,8 @@ export default function MatchLogger({ players, onMatchLogged }: MatchLoggerProps
 
                   <div className="flex items-center gap-1 w-20">
                     <span className="text-xs text-slate-400">G:</span>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       min="0"
                       value={row.goals}
                       onChange={(e) => updateStatRow(index, 'goals', parseInt(e.target.value, 10) || 0)}
@@ -202,8 +211,8 @@ export default function MatchLogger({ players, onMatchLogged }: MatchLoggerProps
 
                   <div className="flex items-center gap-1 w-20">
                     <span className="text-xs text-slate-400">A:</span>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       min="0"
                       value={row.assists}
                       onChange={(e) => updateStatRow(index, 'assists', parseInt(e.target.value, 10) || 0)}
@@ -224,9 +233,9 @@ export default function MatchLogger({ players, onMatchLogged }: MatchLoggerProps
           )}
         </div>
 
-        <button 
-          type="submit" 
-          disabled={loading || !opponent.trim()} 
+        <button
+          type="submit"
+          disabled={loading || !opponent.trim()}
           className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2 px-4 rounded-lg text-sm transition disabled:bg-slate-400 cursor-pointer shadow-sm"
         >
           {loading ? 'Recording Match Context...' : 'Save Complete Match Card'}
