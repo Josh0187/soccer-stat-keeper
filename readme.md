@@ -28,13 +28,13 @@
 
 ## 🏗️ System Architecture
 
-This application uses a modern full-stack decoupled architecture deployed on Render's cloud platform.
+This application uses a modern full-stack decoupled architecture deployed on Render's and Supabase's cloud platform.
 
 ```mermaid
 flowchart LR
     U[👤 User / Browser] <-->|UI Events / Visual Render| A[🖥️ React Frontend\nRender Static Site]
     A <-->|HTTP / REST API| B[⚙️ FastAPI Backend\nRender Web Service]
-    B <-->|SQLAlchemy / SQL| C[(🛢️ PostgreSQL DB\nRender Database)]
+    B <-->|SQLAlchemy / SQL| C[(🛢️ PostgreSQL DB\nSupabase Database)]
 ```
 
 ### Tech Stack
@@ -42,7 +42,7 @@ flowchart LR
 * **Frontend:** React (Vite), TypeScript, Tailwind CSS
 * **Backend:** Python 3.10+, FastAPI, Pydantic, Uvicorn
 * **Database & ORM:** PostgreSQL, SQLAlchemy (Core & ORM)
-* **Hosting Platform:** Render (Static Site, Web Service, Managed PostgreSQL)
+* **Hosting Platform:** Render (Static Site, Web Service), Supabase (Managed PostgreSQL)
 
 ---
 
